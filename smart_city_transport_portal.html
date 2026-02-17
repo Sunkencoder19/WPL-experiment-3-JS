@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mumbai Transit Navigator</title>
+    <style>
+        :root {
+            --primary: #1e3c72;
+            --secondary: #2a5298;
+            --accent: #f7b42c;
+            --background: linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%);
+            --white: #fff;
+            --nav-bg: rgba(30,60,114,0.95);
+            --nav-link: #fff;
+            --nav-link-hover: #f7b42c;
+            --card-bg: rgba(255,255,255,0.85);
+            --shadow: 0 4px 24px #0002;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: var(--background);
+            min-height: 100vh;
+            margin: 0;
+        }
+        nav {
+            width: 100vw;
+            min-width: 100vw;
+            background: var(--nav-bg);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 0 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            height: 64px;
+        }
+        .nav-logo {
+            color: var(--accent);
+            font-size: 2em;
+            font-weight: bold;
+            letter-spacing: 2px;
+            font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
+            line-height: 64px;
+            padding: 0 40px 0 32px;
+            flex: 0 0 auto;
+        }
+        .nav-links {
+            display: flex;
+            gap: 36px;
+            align-items: center;
+            height: 64px;
+            flex: 1 1 0;
+            justify-content: center;
+        }
+        .nav-links a {
+            color: var(--nav-link);
+            text-decoration: none;
+            font-size: 1.15em;
+            font-weight: 500;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            height: 64px;
+            padding: 0 4px;
+        }
+        .nav-links a:hover {
+            color: var(--nav-link-hover);
+        }
+        .container {
+            max-width: 600px;
+            margin: 48px auto 0 auto;
+            background: var(--card-bg);
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            padding: 36px 28px 32px 28px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: var(--primary);
+            margin-top: 0;
+            text-shadow: 1px 1px 4px #fff;
+            font-size: 2em;
+        }
+        #datetime {
+            font-size: 1.2em;
+            color: var(--secondary);
+            margin: 18px 0 32px 0;
+            background: #fff8;
+            padding: 10px 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px #0001;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+        #showRoutesBtn {
+            background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 32px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 18px;
+            transition: background 0.2s, transform 0.2s;
+        }
+        #showRoutesBtn:hover {
+            background: linear-gradient(90deg, #2a5298 0%, #1e3c72 100%);
+            transform: translateY(-2px) scale(1.03);
+        }
+        #routesDiv {
+            width: 100%;
+            min-height: 60px;
+            margin-top: 10px;
+            background: #f7b42c22;
+            border-radius: 8px;
+            padding: 18px 16px;
+            color: #1e3c72;
+            font-size: 1.08em;
+            font-weight: 500;
+            box-shadow: 0 1px 4px #0001;
+            display: none;
+        }
+        .route-graphic {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-top: 24px;
+            margin-bottom: 8px;
+        }
+        .route-line {
+            width: 4px;
+            background: linear-gradient(180deg, #2a5298 0%, #f7b42c 100%);
+            min-height: 120px;
+            margin-left: 18px;
+            position: relative;
+        }
+        .route-stop {
+            display: flex;
+            align-items: center;
+            margin-bottom: 18px;
+            margin-left: 0;
+            position: relative;
+        }
+        .circle {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #2a5298;
+            border: 3px solid #f7b42c;
+            margin-right: 12px;
+            position: relative;
+        }
+        .stop-label {
+            font-size: 1.08em;
+            color: #1e3c72;
+            font-weight: 600;
+        }
+        .live-icon {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #f44336;
+            box-shadow: 0 0 12px 4px #f44336aa;
+            margin-left: 6px;
+            animation: blink 1s infinite;
+            display: inline-block;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        @media (max-width: 700px) {
+            .container {
+                max-width: 98vw;
+                padding: 18px 4vw 18px 4vw;
+            }
+            nav {
+                flex-direction: column;
+                align-items: stretch;
+                justify-content: flex-start;
+                height: auto;
+                gap: 0;
+            }
+            .nav-logo {
+                font-size: 1.3em;
+                line-height: 48px;
+                padding: 8px 0 0 10px;
+            }
+            .nav-links {
+                gap: 18px;
+                font-size: 1em;
+                justify-content: center;
+                height: 48px;
+                padding: 0 0 8px 0;
+            }
+            .nav-links a {
+                height: 48px;
+            }
+        }
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.2em;
+            }
+            #datetime {
+                font-size: 1em;
+                padding: 7px 8px;
+            }
+            #showRoutesBtn {
+                font-size: 1em;
+                padding: 10px 12px;
+            }
+            .container {
+                padding: 10px 2vw 10px 2vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <script>
+        // Displaying welcome message using alert
+        alert("Welcome to Smart City Transport Portal");
+        // Logging welcome message to the console
+        console.log("Welcome to Smart City Transport Portal");
+    </script>
+    <nav>
+        <div class="nav-logo">Mumbai Transit Navigator</div>
+        <div class="nav-links">
+            <a href="#">Home</a>
+            <a href="#routes">Bus Routes</a>
+            <a href="#fare" id="fareCalcNav">Fare Calculator</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </nav>
+    <div class="container">
+        <h1>Welcome to Mumbai Transit Navigator</h1>
+        <button id="showRoutesBtn">Show Mumbai Bus Routes</button>
+        <div id="routesDiv"></div>
+        <div id="fareCalcResult" style="display:none;margin-top:24px;font-size:1.15em;font-weight:600;color:#2a5298;background:#fff8;padding:16px 24px;border-radius:8px;box-shadow:0 2px 8px #0001;"></div>
+        <div style="margin-top:32px;width:100%;max-width:400px;">
+            <label for="stopSearchInput" style="font-weight:600;color:#2a5298;">Search Bus Stop:</label>
+            <input type="text" id="stopSearchInput" placeholder="Enter stop name" style="width:70%;padding:8px 12px;margin:8px 0;border-radius:6px;border:1px solid #2a5298;font-size:1em;">
+            <button id="stopSearchBtn" style="background:#2a5298;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-size:1em;font-weight:600;cursor:pointer;">Search</button>
+            <div id="stopSearchResult" style="margin-top:12px;font-size:1.1em;font-weight:600;"></div>
+        </div>
+        <div style="margin-top:32px;width:100%;max-width:400px;">
+            <label for="routeInput" style="font-weight:600;color:#2a5298;">Show Route Details:</label>
+            <input type="number" id="routeInput" min="1" max="5" placeholder="Enter route number (1-5)" style="width:60%;padding:8px 12px;margin:8px 0;border-radius:6px;border:1px solid #2a5298;font-size:1em;">
+            <button id="showRouteBtn" style="background:#2a5298;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-size:1em;font-weight:600;cursor:pointer;">Show</button>
+            <div id="routeDetailsResult" style="margin-top:12px;font-size:1.1em;font-weight:600;"></div>
+        </div>
+        <div style="margin-top:32px;width:100%;max-width:400px;">
+            <button id="delayNotifyBtn" style="background:#f44336;color:#fff;border:none;border-radius:6px;padding:10px 22px;font-size:1.1em;font-weight:600;cursor:pointer;box-shadow:0 2px 8px #f4433622;">Show Delay Notification</button>
+            <div id="delayNotifyResult" style="margin-top:14px;font-size:1.1em;font-weight:600;"></div>
+        </div>
+        <div style="margin-top:32px;width:100%;max-width:600px;display:flex;flex-direction:column;align-items:center;">
+            <button id="showScheduleBtn" style="background:#2a5298;color:#fff;border:none;border-radius:6px;padding:10px 22px;font-size:1.1em;font-weight:600;cursor:pointer;box-shadow:0 2px 8px #2a529822;margin-bottom:10px;">Show Bus Schedule</button>
+            <div id="scheduleTableResult" style="margin-top:18px;width:100%;"></div>
+        </div>
+    <script>
+        // Bus schedule array of objects
+        var busSchedule = [
+            { route: 'Route 1', start: '05:00', end: '23:00', frequency: '10 min', stops: 'CSMT (VT), Dadar, Bandra, Andheri' },
+            { route: 'Route 2', start: '06:00', end: '22:00', frequency: '12 min', stops: 'Borivali Station, Malad, Goregaon, Andheri' },
+            { route: 'Route 3', start: '04:00', end: '21:00', frequency: '15 min', stops: 'Sion, Chembur, Ghatkopar, Mulund' },
+            { route: 'Route 4', start: '05:00', end: '23:00', frequency: '20 min', stops: 'Colaba, Churchgate, Marine Lines, Grant Road' },
+            { route: 'Route 5', start: '06:00', end: '22:00', frequency: '18 min', stops: 'Kurla, Saki Naka, Powai, IIT Bombay' }
+        ];
+
+        // Function to generate schedule table
+        function showScheduleTable() {
+            var tableHTML = '<table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;box-shadow:0 2px 8px #0001;">';
+            tableHTML += '<thead><tr style="background:#2a5298;color:#fff;">';
+            tableHTML += '<th style="padding:10px;border-bottom:2px solid #f7b42c;">Route</th>';
+            tableHTML += '<th style="padding:10px;border-bottom:2px solid #f7b42c;">Start Time</th>';
+            tableHTML += '<th style="padding:10px;border-bottom:2px solid #f7b42c;">End Time</th>';
+            tableHTML += '<th style="padding:10px;border-bottom:2px solid #f7b42c;">Frequency</th>';
+            tableHTML += '<th style="padding:10px;border-bottom:2px solid #f7b42c;">Stops</th>';
+            tableHTML += '</tr></thead><tbody>';
+            busSchedule.forEach(function(item) {
+                tableHTML += '<tr style="background:#f7b42c22;color:#1e3c72;">';
+                tableHTML += '<td style="padding:10px;border-bottom:1px solid #eee;">' + item.route + '</td>';
+                tableHTML += '<td style="padding:10px;border-bottom:1px solid #eee;">' + item.start + '</td>';
+                tableHTML += '<td style="padding:10px;border-bottom:1px solid #eee;">' + item.end + '</td>';
+                tableHTML += '<td style="padding:10px;border-bottom:1px solid #eee;">' + item.frequency + '</td>';
+                tableHTML += '<td style="padding:10px;border-bottom:1px solid #eee;">' + item.stops + '</td>';
+                tableHTML += '</tr>';
+            });
+            tableHTML += '</tbody></table>';
+            document.getElementById('scheduleTableResult').innerHTML = tableHTML;
+        }
+        document.getElementById('showScheduleBtn').addEventListener('click', showScheduleTable);
+        // Bus stops array for search
+        var busStops = [
+            'CSMT (VT)', 'Dadar', 'Bandra', 'Andheri',
+            'Borivali Station', 'Malad', 'Goregaon',
+            'Sion', 'Chembur', 'Ghatkopar', 'Mulund',
+            'Colaba', 'Churchgate', 'Marine Lines', 'Grant Road',
+            'Kurla', 'Saki Naka', 'Powai', 'IIT Bombay'
+        ];
+
+        // Route details array
+        var routeDetails = [
+            ['CSMT (VT)', 'Dadar', 'Bandra', 'Andheri'],
+            ['Borivali Station', 'Malad', 'Goregaon', 'Andheri'],
+            ['Sion', 'Chembur', 'Ghatkopar', 'Mulund'],
+            ['Colaba', 'Churchgate', 'Marine Lines', 'Grant Road'],
+            ['Kurla', 'Saki Naka', 'Powai', 'IIT Bombay']
+        ];
+
+        // Function to show route details
+        function showRoute(routeNumber) {
+            var resultDiv = document.getElementById('routeDetailsResult');
+            if (routeNumber >= 1 && routeNumber <= routeDetails.length) {
+                var stops = routeDetails[routeNumber - 1];
+                resultDiv.innerHTML = 'Route ' + routeNumber + ' Stops:<br>' + stops.map(function(stop, idx) {
+                    return (idx + 1) + '. ' + stop;
+                }).join('<br>');
+            } else {
+                resultDiv.innerHTML = '<span style="color:#f44336">Invalid route number. Please enter 1-5.</span>';
+            }
+        }
+
+        // Event listener for route details button
+        document.getElementById('showRouteBtn').addEventListener('click', function() {
+            var routeNum = Number(document.getElementById('routeInput').value);
+            showRoute(routeNum);
+        });
+
+        // DOM manipulation for Show Bus Routes
+        document.getElementById('showRoutesBtn').addEventListener('click', function() {
+            var routesDiv = document.getElementById('routesDiv');
+            // Bus route data with service hours
+            var busRoutes = [
+                {
+                    name: 'Route 1: CSMT (VT) → Dadar → Bandra → Andheri',
+                    start: 5, // 5 AM
+                    end: 23 // 11 PM
+                },
+                {
+                    name: 'Route 2: Borivali Station → Malad → Goregaon → Andheri',
+                    start: 6,
+                    end: 22
+                },
+                {
+                    name: 'Route 3: Sion → Chembur → Ghatkopar → Mulund',
+                    start: 4,
+                    end: 21
+                },
+                {
+                    name: 'Route 4: Colaba → Churchgate → Marine Lines → Grant Road',
+                    start: 5,
+                    end: 23
+                },
+                {
+                    name: 'Route 5: Kurla → Saki Naka → Powai → IIT Bombay',
+                    start: 6,
+                    end: 22
+                }
+            ];
+            var now = new Date();
+            var hour = now.getHours();
+            var routeList = busRoutes.map(function(route) {
+                var available = (hour >= route.start && hour < route.end);
+                var statusMsg = available ? '<span style="color:#388e3c;font-weight:600">Available</span>' : '<span style="color:#f44336;font-weight:600">Not Available</span>';
+                return '<li>' + route.name + ' <br><small>Service Hours: ' + route.start + ':00 - ' + route.end + ':00 | Status: ' + statusMsg + '</small></li>';
+            }).join('');
+            routesDiv.innerHTML = `
+                <strong>Popular Mumbai Bus Routes:</strong><br>
+                <ul style="margin: 10px 0 0 18px;">
+                    ${routeList}
+                </ul>
+                <div style="margin-top:18px;font-size:1.05em;color:#2a5298;font-weight:600;">All Bus Stops:</div>
+                <ul style="margin:8px 0 0 18px;list-style-type:circle;">
+                    ${busStops.map(stop => '<li>' + stop + '</li>').join('')}
+                </ul>
+                <div class="route-graphic">
+                    <div class="route-stop"><span class="circle"></span><span class="stop-label">CSMT (VT)</span></div>
+                    <div class="route-line"></div>
+                    <div class="route-stop"><span class="circle"></span><span class="stop-label">Dadar</span><span class="live-icon" title="Live Location"></span></div>
+                    <div class="route-line"></div>
+                    <div class="route-stop"><span class="circle"></span><span class="stop-label">Bandra</span></div>
+                    <div class="route-line"></div>
+                    <div class="route-stop"><span class="circle"></span><span class="stop-label">Andheri</span></div>
+                </div>
+            `;
+            routesDiv.style.display = 'block';
+        });
+
+        // Bus stop search logic
+        document.getElementById('stopSearchBtn').addEventListener('click', function() {
+            var input = document.getElementById('stopSearchInput').value.trim();
+            var found = false;
+            for (var i = 0; i < busStops.length; i++) {
+                if (busStops[i].toLowerCase() === input.toLowerCase()) {
+                    found = true;
+                    break;
+                }
+            }
+            var resultDiv = document.getElementById('stopSearchResult');
+            if (input === '') {
+                resultDiv.innerHTML = '<span style="color:#f44336">Please enter a stop name.</span>';
+            } else if (found) {
+                resultDiv.innerHTML = '<span style="color:#388e3c">Stop Found: ' + input + '</span>';
+            } else {
+                resultDiv.innerHTML = '<span style="color:#f44336">Stop Not Found: ' + input + '</span>';
+            }
+        });
+
+        // Fare Calculator logic
+        document.getElementById('fareCalcNav').addEventListener('click', function(e) {
+            e.preventDefault();
+            var stops = prompt('Enter number of stops:');
+            if (stops !== null && stops !== '' && !isNaN(stops) && Number(stops) > 0) {
+                var fare = Number(stops) * 5; // ₹5 per stop
+                document.getElementById('fareCalcResult').style.display = 'block';
+                document.getElementById('fareCalcResult').innerHTML = 'Ticket Fare for ' + stops + ' stops: <span style="color:#f44336">₹' + fare + '</span>';
+            } else {
+                document.getElementById('fareCalcResult').style.display = 'block';
+                document.getElementById('fareCalcResult').innerHTML = 'Please enter a valid number of stops.';
+            }
+        });
+
+        // Delay notification function
+        function showDelayNotification() {
+            var resultDiv = document.getElementById('delayNotifyResult');
+            resultDiv.innerHTML = '<span style="color:#f44336">⚠️ Bus service is delayed due to traffic. Please check again later.</span>';
+        }
+        document.getElementById('delayNotifyBtn').addEventListener('click', showDelayNotification);
+    </script>
+    </script>
+</body>
+</html>
